@@ -121,8 +121,8 @@ export default function Footer() {
               Privacy Policy
             </Link>
             <span>•</span>
-            <Link href="#terms" className="hover:text-brand-primary transition-colors">
-              Terms of Service
+            <Link href="/terms-and-conditions" className="hover:text-brand-primary transition-colors">
+              Terms & Conditions
             </Link>
             <span>•</span>
             <Link href="#refund" className="hover:text-brand-primary transition-colors">
