@@ -26,7 +26,7 @@ export default function Footer() {
             </p>
             <div className="flex items-center gap-3">
               <a
-                href="mailto:hello@technextacademy.com"
+                href="mailto:anita.palirosary@gmail.com"
                 className="p-2.5 rounded-lg bg-brand-bg hover:bg-brand-border/50 border border-brand-border text-brand-textSecondary hover:text-brand-primary transition-colors duration-300"
                 aria-label="Email support"
               >

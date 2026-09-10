@@ -195,7 +195,7 @@ export default function RefundCancellationPolicyPage() {
                 </div>
                 <div className="flex items-center gap-1.5">
                   <Mail className="w-3.5 h-3.5 text-brand-primary" />
-                  <span>Email: <a href="mailto:hello@technextacademy.com" className="text-white hover:text-brand-primary transition-colors">hello@technextacademy.com</a></span>
+                  <span>Email: <a href="mailto:anita.palirosary@gmail.com" className="text-white hover:text-brand-primary transition-colors">anita.palirosary@gmail.com</a></span>
                 </div>
                 <div className="flex items-center gap-1.5">
                   <Phone className="w-3.5 h-3.5 text-brand-primary" />

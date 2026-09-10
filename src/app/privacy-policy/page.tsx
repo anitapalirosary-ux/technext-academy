@@ -202,7 +202,7 @@ export default function PrivacyPolicyPage() {
               </h3>
             </div>
             <p className="text-xs md:text-sm text-brand-textSecondary leading-relaxed">
-              Depending on applicable laws, you have the right to request access to your personal data, request correction of inaccurate data, or request the deletion of your account and related records. To exercise these rights, please reach out to us at <a href="mailto:hello@technextacademy.com" className="text-brand-primary hover:underline">hello@technextacademy.com</a>.
+              Depending on applicable laws, you have the right to request access to your personal data, request correction of inaccurate data, or request the deletion of your account and related records. To exercise these rights, please reach out to us at <a href="mailto:anita.palirosary@gmail.com" className="text-brand-primary hover:underline">anita.palirosary@gmail.com</a>.
             </p>
           </div>
 
@@ -250,7 +250,7 @@ export default function PrivacyPolicyPage() {
                 </div>
                 <div className="flex items-center gap-1.5">
                   <Mail className="w-3.5 h-3.5 text-brand-primary" />
-                  <span>Email: <a href="mailto:hello@technextacademy.com" className="text-white hover:text-brand-primary transition-colors">hello@technextacademy.com</a></span>
+                  <span>Email: <a href="mailto:anita.palirosary@gmail.com" className="text-white hover:text-brand-primary transition-colors">anita.palirosary@gmail.com</a></span>
                 </div>
                 <div className="flex items-center gap-1.5">
                   <Phone className="w-3.5 h-3.5 text-brand-primary" />

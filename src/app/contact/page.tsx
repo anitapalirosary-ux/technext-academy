@@ -184,10 +184,10 @@ export default function ContactPage() {
                       Email
                     </h3>
                     <a
-                      href="mailto:hello@technextacademy.com"
+                      href="mailto:anita.palirosary@gmail.com"
                       className="text-sm md:text-base font-bold text-white hover:text-brand-primary transition-colors block mb-1"
                     >
-                      hello@technextacademy.com
+                      anita.palirosary@gmail.com
                     </a>
                     <p className="text-xs text-brand-textSecondary leading-relaxed">
                       For general questions, session details, and learning-related enquiries.
