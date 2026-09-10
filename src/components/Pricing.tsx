@@ -24,7 +24,7 @@ const PRICING_TIERS = [
       'Internship & job placement referrals',
     ],
     cta: 'Join Free Community',
-    ctaLink: 'https://chat.whatsapp.com/placeholder',
+    ctaLink: 'https://chat.whatsapp.com/LCyL0l9djWN3kxnFVusf6k',
     isPrimary: false,
   },
   {
@@ -153,6 +153,8 @@ export default function Pricing() {
               <div>
                 <a
                   href={tier.ctaLink}
+                  target={tier.ctaLink.startsWith('http') ? '_blank' : undefined}
+                  rel={tier.ctaLink.startsWith('http') ? 'noopener noreferrer' : undefined}
                   className={`group flex items-center justify-center gap-1.5 w-full py-2.5 px-5 rounded-xl font-bold text-xs md:text-sm transition-all duration-200 ${
                     tier.isPrimary
                       ? 'bg-brand-primary hover:bg-brand-primaryDark text-[#0B0428] shadow-md shadow-brand-primary/20 hover:scale-[1.02]'
