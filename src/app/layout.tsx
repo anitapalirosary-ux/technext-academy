@@ -14,6 +14,9 @@ const spaceGrotesk = Space_Grotesk({
   display: 'swap',
 });
 
+import { AuthProvider } from '@/context/AuthContext';
+import UserProfileModal from '@/components/UserProfileModal';
+
 export const metadata: Metadata = {
   title: 'TechNext Academy | Career Readiness & Industry Mentorship',
   description: 'Bridge the gap between coding and a real tech career with structured cohort programs led by industry practitioners.',
@@ -27,7 +30,10 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${inter.variable} ${spaceGrotesk.variable}`}>
       <body className="bg-brand-bg text-brand-textPrimary antialiased selection:bg-brand-primary/30 selection:text-brand-primary">
-        {children}
+        <AuthProvider>
+          {children}
+          <UserProfileModal />
+        </AuthProvider>
       </body>
     </html>
   );

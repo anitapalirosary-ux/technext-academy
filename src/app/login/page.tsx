@@ -14,8 +14,10 @@ import {
   Home,
   BookOpen
 } from 'lucide-react';
+import { useAuth } from '@/context/AuthContext';
 
 export default function LoginPage() {
+  const { login: authLogin } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -59,19 +61,15 @@ export default function LoginPage() {
         return;
       }
 
-      // Save user session in localStorage
-      if (typeof window !== 'undefined') {
-        const userData = {
-          id: data.user?.id,
-          name: data.user?.name || email.split('@')[0],
-          email: data.user?.email || email.trim(),
-          phone: data.user?.phone || '',
-          role: data.user?.role || 'student',
-          loggedIn: true,
-          timestamp: new Date().toISOString(),
-        };
-        localStorage.setItem('technext_user', JSON.stringify(userData));
-      }
+      // Save user session in AuthContext & localStorage
+      const userData = {
+        id: data.user?.id,
+        name: data.user?.name || email.split('@')[0],
+        email: data.user?.email || email.trim(),
+        phone: data.user?.phone || '',
+        role: data.user?.role || 'student',
+      };
+      authLogin(userData);
 
       // Trigger "Login Successful" popup
       setSuccessData({

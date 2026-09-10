@@ -136,24 +136,15 @@ const ASSESSMENT_QUESTIONS: Question[] = [
   },
 ];
 
+import { useAuth } from '@/context/AuthContext';
+
 export default function InterviewTestPage() {
-  const [userName, setUserName] = useState('Candidate');
+  const { user } = useAuth();
+  const userName = user?.name || 'Candidate';
   const [currentIdx, setCurrentIdx] = useState(0);
   const [selectedAnswers, setSelectedAnswers] = useState<{ [key: number]: number }>({});
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [timeLeft, setTimeLeft] = useState(600); // 10 minutes
-
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const stored = localStorage.getItem('technext_user');
-      if (stored) {
-        try {
-          const parsed = JSON.parse(stored);
-          if (parsed.name) setUserName(parsed.name);
-        } catch (e) {}
-      }
-    }
-  }, []);
 
   useEffect(() => {
     if (isSubmitted || timeLeft <= 0) return;

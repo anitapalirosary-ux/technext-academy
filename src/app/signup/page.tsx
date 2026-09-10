@@ -16,6 +16,7 @@ import {
   LogIn,
   Home
 } from 'lucide-react';
+import { useAuth } from '@/context/AuthContext';
 
 const COUNTRY_CODES = [
   { code: '+91', country: 'IN', label: 'India (+91)' },
@@ -31,6 +32,7 @@ const COUNTRY_CODES = [
 ];
 
 export default function SignupPage() {
+  const { login: authLogin } = useAuth();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [countryCode, setCountryCode] = useState('+91');
@@ -109,19 +111,15 @@ export default function SignupPage() {
         return;
       }
 
-      // Save user session to localStorage for app access
-      if (typeof window !== 'undefined') {
-        const userData = {
-          id: data.user?.id,
-          name: data.user?.name || name.trim(),
-          email: data.user?.email || email.trim(),
-          phone: data.user?.phone || `${countryCode} ${phone}`,
-          role: data.user?.role || 'student',
-          loggedIn: true,
-          timestamp: new Date().toISOString(),
-        };
-        localStorage.setItem('technext_user', JSON.stringify(userData));
-      }
+      // Save user session in AuthContext & localStorage
+      const userData = {
+        id: data.user?.id,
+        name: data.user?.name || name.trim(),
+        email: data.user?.email || email.trim(),
+        phone: data.user?.phone || `${countryCode} ${phone}`,
+        role: data.user?.role || 'student',
+      };
+      authLogin(userData);
 
       // Trigger "Signup Successful" popup
       setSuccessData({
