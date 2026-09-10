@@ -50,13 +50,13 @@ export default function CTA({ onOpenModal }: CTAProps) {
             </button>
 
             <a
-              href="https://chat.whatsapp.com/placeholder"
+              href="https://wa.me/917812804057?text=Hi%2C%20I%E2%80%99m%20interested%20in%20learning%20more%20about%20your%20courses%20at%20TechNext%20Academy.%20Could%20you%20please%20share%20the%20details%3F"
               target="_blank"
               rel="noopener noreferrer"
               className="w-full sm:w-auto inline-flex items-center justify-center gap-2 border border-white/20 hover:border-brand-primary text-white hover:text-brand-primary bg-brand-surface/40 hover:bg-brand-surface/80 px-6 py-2.5 rounded-full font-bold text-xs md:text-sm transition-all duration-200"
             >
               <MessageCircle className="w-4 h-4 fill-current text-brand-primary" />
-              <span>Join WhatsApp Group</span>
+              <span>Chat on WhatsApp</span>
             </a>
           </div>
 

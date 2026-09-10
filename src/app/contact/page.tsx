@@ -236,10 +236,10 @@ export default function ContactPage() {
                       Get quick answers about upcoming live sessions, registration, and interview preparation.
                     </p>
                     <a
-                      href="https://chat.whatsapp.com/placeholder"
+                      href="https://wa.me/917812804057?text=Hi%2C%20I%E2%80%99m%20interested%20in%20learning%20more%20about%20your%20courses%20at%20TechNext%20Academy.%20Could%20you%20please%20share%20the%20details%3F"
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-xl bg-brand-primary hover:bg-brand-primaryDark text-[#0B0428] font-bold text-xs transition-all shadow-md hover:scale-105"
+                      className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#25D366] hover:bg-[#20bd5a] text-[#0B0428] font-bold text-xs transition-all shadow-md hover:scale-105"
                     >
                       <MessageCircle className="w-3.5 h-3.5 fill-current" />
                       <span>Chat on WhatsApp</span>

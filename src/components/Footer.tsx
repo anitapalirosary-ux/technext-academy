@@ -33,11 +33,11 @@ export default function Footer() {
                 <Mail className="w-4 h-4" />
               </a>
               <a
-                href="https://chat.whatsapp.com/placeholder"
+                href="https://wa.me/917812804057?text=Hi%2C%20I%E2%80%99m%20interested%20in%20learning%20more%20about%20your%20courses%20at%20TechNext%20Academy.%20Could%20you%20please%20share%20the%20details%3F"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="p-2.5 rounded-lg bg-brand-bg hover:bg-brand-border/50 border border-brand-border text-brand-textSecondary hover:text-brand-primary transition-colors duration-300"
-                aria-label="WhatsApp Community"
+                aria-label="WhatsApp Direct Chat"
               >
                 <MessageCircle className="w-4 h-4" />
               </a>
