@@ -117,7 +117,7 @@ export default function Footer() {
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-brand-textSecondary">
           <p>© {new Date().getFullYear()} TechNext Academy. All rights reserved.</p>
           <div className="flex gap-4">
-            <Link href="#privacy" className="hover:text-brand-primary transition-colors">
+            <Link href="/privacy-policy" className="hover:text-brand-primary transition-colors">
               Privacy Policy
             </Link>
             <span>•</span>
@@ -125,8 +125,8 @@ export default function Footer() {
               Terms & Conditions
             </Link>
             <span>•</span>
-            <Link href="#refund" className="hover:text-brand-primary transition-colors">
-              Refund Policy
+            <Link href="/refund-cancellation-policy" className="hover:text-brand-primary transition-colors">
+              Refund & Cancellation Policy
             </Link>
           </div>
         </div>
