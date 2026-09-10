@@ -175,10 +175,10 @@ export default function ContactPage() {
                       Phone
                     </h3>
                     <a
-                      href="tel:+919876543210"
+                      href="tel:+917812804057"
                       className="text-sm md:text-base font-bold text-white hover:text-brand-primary transition-colors block mb-1"
                     >
-                      +91 98765 43210
+                      +91 7812804057
                     </a>
                     <p className="text-xs text-brand-textSecondary leading-relaxed">
                       Available for session and course-related enquiries.

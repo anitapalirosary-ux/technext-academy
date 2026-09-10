@@ -121,7 +121,7 @@ export default function LiveSessionModal({ isOpen, onClose }: LiveSessionModalPr
                         required
                         value={formData.phone}
                         onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                        placeholder="+91 98765 43210"
+                        placeholder="+91 7812804057"
                         className="w-full bg-brand-bg/80 border border-brand-border focus:border-brand-primary focus:ring-1 focus:ring-brand-primary rounded-xl pl-10 pr-4 py-2 text-xs md:text-sm text-white placeholder:text-white/30 outline-none transition-colors"
                       />
                     </div>
