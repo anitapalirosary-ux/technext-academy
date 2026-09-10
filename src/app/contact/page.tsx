@@ -59,39 +59,53 @@ export default function ContactPage() {
     setLoading(true);
 
     try {
-      const accessKey =
-        process.env.NEXT_PUBLIC_WEB3FORMS_ACCESS_KEY ||
-        'bf55180b-db3a-48db-98d1-b67d67aa0ab5';
-
-      const res = await fetch('https://api.web3forms.com/submit', {
+      // 1. Send to internal Next.js API route (Supabase tbl_SendMessage + Resend Email)
+      const res = await fetch('/api/contact', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Accept: 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          access_key: accessKey,
-          subject: `TechNext Academy Inquiry from ${formData.name}`,
-          name: formData.name,
-          email: formData.email,
-          phone: `${formData.countryCode} ${formData.phone}`,
-          message: formData.message,
-          from_name: 'TechNext Academy Website',
+          name: formData.name.trim(),
+          email: formData.email.trim(),
+          phone: `${formData.countryCode} ${formData.phone}`.trim(),
+          message: formData.message.trim(),
         }),
       });
 
       const data = await res.json();
 
-      if (data.success) {
+      // 2. Also send to Web3Forms as backup
+      try {
+        const accessKey =
+          process.env.NEXT_PUBLIC_WEB3FORMS_ACCESS_KEY ||
+          'bf55180b-db3a-48db-98d1-b67d67aa0ab5';
+
+        fetch('https://api.web3forms.com/submit', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Accept: 'application/json',
+          },
+          body: JSON.stringify({
+            access_key: accessKey,
+            subject: `TechNext Academy Inquiry from ${formData.name}`,
+            name: formData.name,
+            email: formData.email,
+            phone: `${formData.countryCode} ${formData.phone}`,
+            message: formData.message,
+            from_name: 'TechNext Academy Website',
+          }),
+        }).catch(() => {});
+      } catch (e) {}
+
+      if (res.ok && data.success) {
         setLoading(false);
         setSubmitted(true);
       } else {
-        setError(data.message || 'Failed to send message. Please try again.');
+        setError(data.error || 'Failed to send message. Please try again.');
         setLoading(false);
       }
     } catch (err: any) {
       console.error('Contact form submission error:', err);
-      // Graceful fallback to avoid blocking the user
       setLoading(false);
       setSubmitted(true);
     }
