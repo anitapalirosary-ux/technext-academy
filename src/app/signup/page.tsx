@@ -51,7 +51,7 @@ function SignupFormContent() {
     return cleanNum.length >= 7 && cleanNum.length <= 15;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
 
@@ -86,22 +86,48 @@ function SignupFormContent() {
 
     setLoading(true);
 
-    setTimeout(() => {
-      if (typeof window !== 'undefined') {
-        const cleanPhone = phone.replace(/\D/g, '');
-        const userData = {
+    try {
+      const res = await fetch('/api/auth/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
           name: name.trim(),
           email: email.trim(),
-          phone: `${countryCode} ${cleanPhone}`,
+          countryCode: countryCode,
+          phone: phone.trim(),
+          password: password,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setError(data.error || 'Failed to create account. Please try again.');
+        setLoading(false);
+        return;
+      }
+
+      if (typeof window !== 'undefined') {
+        const userData = {
+          id: data.user?.id,
+          name: data.user?.name || name.trim(),
+          email: data.user?.email || email.trim(),
+          phone: data.user?.phone || `${countryCode} ${phone}`,
+          role: data.user?.role || 'student',
           loggedIn: true,
           timestamp: new Date().toISOString(),
         };
         localStorage.setItem('technext_user', JSON.stringify(userData));
       }
+
       setLoading(false);
       const destination = decodeURIComponent(nextUrl);
       router.push(destination);
-    }, 600);
+    } catch (err: any) {
+      console.error('Signup error:', err);
+      setError('A network error occurred. Please check your connection and try again.');
+      setLoading(false);
+    }
   };
 
   const loginLink = nextUrl

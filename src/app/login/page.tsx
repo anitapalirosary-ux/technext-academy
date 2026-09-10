@@ -24,7 +24,7 @@ function LoginFormContent() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
 
@@ -39,20 +39,45 @@ function LoginFormContent() {
 
     setLoading(true);
 
-    setTimeout(() => {
+    try {
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: email.trim(),
+          password: password,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setError(data.error || 'Failed to sign in. Please check your credentials.');
+        setLoading(false);
+        return;
+      }
+
       if (typeof window !== 'undefined') {
         const userData = {
-          name: email.split('@')[0],
-          email: email.trim(),
+          id: data.user?.id,
+          name: data.user?.name || email.split('@')[0],
+          email: data.user?.email || email.trim(),
+          phone: data.user?.phone || '',
+          role: data.user?.role || 'student',
           loggedIn: true,
           timestamp: new Date().toISOString(),
         };
         localStorage.setItem('technext_user', JSON.stringify(userData));
       }
+
       setLoading(false);
       const destination = decodeURIComponent(nextUrl);
       router.push(destination);
-    }, 600);
+    } catch (err: any) {
+      console.error('Login error:', err);
+      setError('A network error occurred. Please check your connection and try again.');
+      setLoading(false);
+    }
   };
 
   const signupLink = nextUrl
