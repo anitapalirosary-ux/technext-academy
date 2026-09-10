@@ -1,7 +1,6 @@
 'use client';
 
-import { useState, Suspense } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useState } from 'react';
 import Link from 'next/link';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
@@ -12,8 +11,10 @@ import {
   Mail,
   User,
   Phone,
-  Sparkles,
-  AlertCircle
+  AlertCircle,
+  X,
+  LogIn,
+  Home
 } from 'lucide-react';
 
 const COUNTRY_CODES = [
@@ -29,11 +30,7 @@ const COUNTRY_CODES = [
   { code: '+81', country: 'JP', label: 'Japan (+81)' },
 ];
 
-function SignupFormContent() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const nextUrl = searchParams.get('next') || '/interview-test';
-
+export default function SignupPage() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [countryCode, setCountryCode] = useState('+91');
@@ -42,6 +39,11 @@ function SignupFormContent() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [successData, setSuccessData] = useState<{
+    name: string;
+    email: string;
+    phone: string;
+  } | null>(null);
 
   const validatePhone = (num: string, code: string): boolean => {
     const cleanNum = num.replace(/\D/g, '');
@@ -107,6 +109,7 @@ function SignupFormContent() {
         return;
       }
 
+      // Save user session to localStorage for app access
       if (typeof window !== 'undefined') {
         const userData = {
           id: data.user?.id,
@@ -120,9 +123,20 @@ function SignupFormContent() {
         localStorage.setItem('technext_user', JSON.stringify(userData));
       }
 
+      // Trigger "Signup Successful" popup
+      setSuccessData({
+        name: data.user?.name || name.trim(),
+        email: data.user?.email || email.trim(),
+        phone: data.user?.phone || `${countryCode} ${phone}`,
+      });
+
+      // Clear form inputs
+      setName('');
+      setEmail('');
+      setPhone('');
+      setPassword('');
+      setConfirmPassword('');
       setLoading(false);
-      const destination = decodeURIComponent(nextUrl);
-      router.push(destination);
     } catch (err: any) {
       console.error('Signup error:', err);
       setError('A network error occurred. Please check your connection and try again.');
@@ -130,221 +144,6 @@ function SignupFormContent() {
     }
   };
 
-  const loginLink = nextUrl
-    ? `/login?next=${encodeURIComponent(nextUrl)}`
-    : '/login';
-
-  return (
-    <div className="w-full max-w-5xl mx-auto px-4 md:px-8 relative z-20">
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-        
-        {/* Left Col: Info & Benefits */}
-        <div className="lg:col-span-5 text-left">
-          <div className="inline-flex items-center gap-2 px-3 py-0.5 rounded-full border border-brand-primary/30 bg-brand-primary/10 text-brand-primary text-[11px] font-semibold tracking-wider uppercase mb-4">
-            <span className="h-1.5 w-1.5 rounded-full bg-brand-primary animate-ping" />
-            Candidate Access Portal
-          </div>
-
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-display font-bold text-white tracking-tight leading-tight mb-3">
-            {nextUrl.includes('interview-test')
-              ? 'Unlock Your Interview Readiness Test'
-              : 'Create Your TechNext Account'}
-          </h1>
-
-          <p className="text-xs md:text-sm text-brand-textSecondary mb-6 leading-relaxed">
-            Create your free profile to access calibrated interview tests, track your technical scoring, and receive personalized feedback.
-          </p>
-
-          <div className="space-y-3 mb-6">
-            <div className="flex items-start gap-2.5 text-xs text-white/90">
-              <CheckCircle2 className="w-4 h-4 text-brand-primary shrink-0 mt-0.5" />
-              <span>Full access to 6-category technical interview assessment</span>
-            </div>
-            <div className="flex items-start gap-2.5 text-xs text-white/90">
-              <CheckCircle2 className="w-4 h-4 text-brand-primary shrink-0 mt-0.5" />
-              <span>Instant gap analysis report &amp; score breakdown</span>
-            </div>
-            <div className="flex items-start gap-2.5 text-xs text-white/90">
-              <CheckCircle2 className="w-4 h-4 text-brand-primary shrink-0 mt-0.5" />
-              <span>Direct guidance for .NET, Azure, and System Design</span>
-            </div>
-          </div>
-
-          {nextUrl.includes('interview-test') && (
-            <div className="p-3.5 rounded-2xl bg-brand-surface/70 border border-brand-primary/30 text-xs text-white/80 flex items-center gap-3">
-              <Sparkles className="w-4 h-4 text-brand-primary shrink-0" />
-              <span>You will be redirected straight to the <strong>Interview Test</strong> right after completing signup.</span>
-            </div>
-          )}
-        </div>
-
-        {/* Right Col: Signup Form Card */}
-        <div className="lg:col-span-7">
-          <div className="bg-brand-surface border border-brand-border/80 rounded-3xl p-6 md:p-8 shadow-2xl relative text-left">
-            <div className="mb-5">
-              <h2 className="text-xl font-display font-bold text-white mb-1">
-                Create Account
-              </h2>
-              <p className="text-xs text-brand-textSecondary">
-                Enter your details to register and begin your preparation.
-              </p>
-            </div>
-
-            {error && (
-              <div className="mb-4 p-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-xs flex items-center gap-2">
-                <AlertCircle className="w-4 h-4 shrink-0" />
-                <span>{error}</span>
-              </div>
-            )}
-
-            <form onSubmit={handleSubmit} className="space-y-3.5">
-              {/* Field 1: Full Name */}
-              <div>
-                <label className="block text-xs font-medium text-white/80 mb-1">
-                  1. Full Name <span className="text-brand-primary">*</span>
-                </label>
-                <div className="relative">
-                  <User className="w-4 h-4 text-brand-textSecondary absolute left-3.5 top-1/2 -translate-y-1/2" />
-                  <input
-                    type="text"
-                    required
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    placeholder="e.g. Ketan Sharma"
-                    className="w-full bg-brand-bg/80 border border-brand-border focus:border-brand-primary focus:ring-1 focus:ring-brand-primary rounded-xl pl-10 pr-4 py-2 text-xs md:text-sm text-white placeholder:text-white/30 outline-none transition-colors"
-                  />
-                </div>
-              </div>
-
-              {/* Field 2: Email Address */}
-              <div>
-                <label className="block text-xs font-medium text-white/80 mb-1">
-                  2. Email Address <span className="text-brand-primary">*</span>
-                </label>
-                <div className="relative">
-                  <Mail className="w-4 h-4 text-brand-textSecondary absolute left-3.5 top-1/2 -translate-y-1/2" />
-                  <input
-                    type="email"
-                    required
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="you@domain.com"
-                    className="w-full bg-brand-bg/80 border border-brand-border focus:border-brand-primary focus:ring-1 focus:ring-brand-primary rounded-xl pl-10 pr-4 py-2 text-xs md:text-sm text-white placeholder:text-white/30 outline-none transition-colors"
-                  />
-                </div>
-              </div>
-
-              {/* Field 3: Phone Number with Country Code */}
-              <div>
-                <label className="block text-xs font-medium text-white/80 mb-1">
-                  3. Phone Number <span className="text-brand-primary">*</span>
-                </label>
-                <div className="flex gap-2">
-                  {/* Country Code Selector */}
-                  <div className="relative w-36 shrink-0">
-                    <select
-                      value={countryCode}
-                      onChange={(e) => setCountryCode(e.target.value)}
-                      className="w-full bg-brand-bg/80 border border-brand-border focus:border-brand-primary focus:ring-1 focus:ring-brand-primary rounded-xl px-2.5 py-2 text-xs md:text-sm text-white outline-none transition-colors appearance-none cursor-pointer"
-                    >
-                      {COUNTRY_CODES.map((item) => (
-                        <option key={item.code} value={item.code} className="bg-brand-surface text-white">
-                          {item.label}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  {/* Phone Input */}
-                  <div className="relative flex-1">
-                    <Phone className="w-4 h-4 text-brand-textSecondary absolute left-3.5 top-1/2 -translate-y-1/2" />
-                    <input
-                      type="tel"
-                      required
-                      value={phone}
-                      onChange={(e) => setPhone(e.target.value)}
-                      placeholder={countryCode === '+91' ? '7812804057' : 'Phone Number'}
-                      className="w-full bg-brand-bg/80 border border-brand-border focus:border-brand-primary focus:ring-1 focus:ring-brand-primary rounded-xl pl-10 pr-4 py-2 text-xs md:text-sm text-white placeholder:text-white/30 outline-none transition-colors"
-                    />
-                  </div>
-                </div>
-                <span className="text-[10px] text-brand-textSecondary mt-1 block">
-                  {countryCode === '+91' ? '10-digit mobile number for assessment alerts.' : 'Standard international phone number.'}
-                </span>
-              </div>
-
-              {/* Field 4: Password */}
-              <div>
-                <label className="block text-xs font-medium text-white/80 mb-1">
-                  4. Password <span className="text-brand-primary">*</span>
-                </label>
-                <div className="relative">
-                  <Lock className="w-4 h-4 text-brand-textSecondary absolute left-3.5 top-1/2 -translate-y-1/2" />
-                  <input
-                    type="password"
-                    required
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="••••••••"
-                    className="w-full bg-brand-bg/80 border border-brand-border focus:border-brand-primary focus:ring-1 focus:ring-brand-primary rounded-xl pl-10 pr-4 py-2 text-xs md:text-sm text-white placeholder:text-white/30 outline-none transition-colors"
-                  />
-                </div>
-              </div>
-
-              {/* Field 5: Confirm Password */}
-              <div>
-                <label className="block text-xs font-medium text-white/80 mb-1">
-                  5. Confirm Password <span className="text-brand-primary">*</span>
-                </label>
-                <div className="relative">
-                  <Lock className="w-4 h-4 text-brand-textSecondary absolute left-3.5 top-1/2 -translate-y-1/2" />
-                  <input
-                    type="password"
-                    required
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    placeholder="••••••••"
-                    className="w-full bg-brand-bg/80 border border-brand-border focus:border-brand-primary focus:ring-1 focus:ring-brand-primary rounded-xl pl-10 pr-4 py-2 text-xs md:text-sm text-white placeholder:text-white/30 outline-none transition-colors"
-                  />
-                </div>
-              </div>
-
-              {/* Field 6: Submit Button */}
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full mt-2 inline-flex items-center justify-center gap-2 bg-brand-primary hover:bg-brand-primaryDark text-[#0B0428] font-bold text-xs md:text-sm py-2.5 rounded-xl transition-all duration-200 shadow-md shadow-brand-primary/20 hover:scale-[1.01] disabled:opacity-50"
-              >
-                <span>
-                  {loading
-                    ? 'Creating Account...'
-                    : nextUrl.includes('interview-test')
-                    ? 'Create Account & Start Test'
-                    : 'Create Account'}
-                </span>
-                <ArrowRight className="w-4 h-4" />
-              </button>
-            </form>
-
-            {/* Bottom Link: Already have an account? Login */}
-            <div className="mt-5 pt-4 border-t border-brand-border/60 text-center text-xs text-brand-textSecondary">
-              Already have an account?{' '}
-              <Link
-                href={loginLink}
-                className="text-brand-primary hover:underline font-semibold"
-              >
-                Login
-              </Link>
-            </div>
-          </div>
-        </div>
-
-      </div>
-    </div>
-  );
-}
-
-export default function SignupPage() {
   return (
     <main className="relative min-h-screen bg-brand-bg text-brand-textPrimary overflow-hidden font-sans flex flex-col justify-between">
       {/* Navigation Header */}
@@ -356,10 +155,262 @@ export default function SignupPage() {
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(0,237,100,0.06)_0%,transparent_70%)] pointer-events-none" />
         <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-brand-primary/10 rounded-full blur-[120px] pointer-events-none" />
 
-        <Suspense fallback={<div className="text-center text-white py-12">Loading portal...</div>}>
-          <SignupFormContent />
-        </Suspense>
+        <div className="w-full max-w-5xl mx-auto px-4 md:px-8 relative z-20">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+            
+            {/* Left Col: Info & Benefits */}
+            <div className="lg:col-span-5 text-left">
+              <div className="inline-flex items-center gap-2 px-3 py-0.5 rounded-full border border-brand-primary/30 bg-brand-primary/10 text-brand-primary text-[11px] font-semibold tracking-wider uppercase mb-4">
+                <span className="h-1.5 w-1.5 rounded-full bg-brand-primary animate-ping" />
+                Student &amp; Candidate Portal
+              </div>
+
+              <h1 className="text-2xl sm:text-3xl md:text-4xl font-display font-bold text-white tracking-tight leading-tight mb-3">
+                Create Your <span className="text-gradient">TechNext Account</span>
+              </h1>
+
+              <p className="text-xs md:text-sm text-brand-textSecondary mb-6 leading-relaxed">
+                Register to access software development courses, live interactive sessions, and direct mentorship from experienced senior engineers.
+              </p>
+
+              <div className="space-y-3 mb-6">
+                <div className="flex items-start gap-2.5 text-xs text-white/90">
+                  <CheckCircle2 className="w-4 h-4 text-brand-primary shrink-0 mt-0.5" />
+                  <span>Practical .NET, Web API, and Cloud Architecture programs</span>
+                </div>
+                <div className="flex items-start gap-2.5 text-xs text-white/90">
+                  <CheckCircle2 className="w-4 h-4 text-brand-primary shrink-0 mt-0.5" />
+                  <span>Direct booking for upcoming live interactive sessions</span>
+                </div>
+                <div className="flex items-start gap-2.5 text-xs text-white/90">
+                  <CheckCircle2 className="w-4 h-4 text-brand-primary shrink-0 mt-0.5" />
+                  <span>Real enterprise scenario guidance &amp; code reviews</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Right Col: Signup Form Card */}
+            <div className="lg:col-span-7">
+              <div className="bg-brand-surface border border-brand-border/80 rounded-3xl p-6 md:p-8 shadow-2xl relative text-left">
+                <div className="mb-5">
+                  <h2 className="text-xl font-display font-bold text-white mb-1">
+                    Create Account
+                  </h2>
+                  <p className="text-xs text-brand-textSecondary">
+                    Enter your details to register and begin your preparation.
+                  </p>
+                </div>
+
+                {error && (
+                  <div className="mb-4 p-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-xs flex items-center gap-2">
+                    <AlertCircle className="w-4 h-4 shrink-0" />
+                    <span>{error}</span>
+                  </div>
+                )}
+
+                <form onSubmit={handleSubmit} className="space-y-3.5">
+                  {/* Field 1: Full Name */}
+                  <div>
+                    <label className="block text-xs font-medium text-white/80 mb-1">
+                      1. Full Name <span className="text-brand-primary">*</span>
+                    </label>
+                    <div className="relative">
+                      <User className="w-4 h-4 text-brand-textSecondary absolute left-3.5 top-1/2 -translate-y-1/2" />
+                      <input
+                        type="text"
+                        required
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                        placeholder="e.g. Ketan Sharma"
+                        className="w-full bg-brand-bg/80 border border-brand-border focus:border-brand-primary focus:ring-1 focus:ring-brand-primary rounded-xl pl-10 pr-4 py-2 text-xs md:text-sm text-white placeholder:text-white/30 outline-none transition-colors"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Field 2: Email Address */}
+                  <div>
+                    <label className="block text-xs font-medium text-white/80 mb-1">
+                      2. Email Address <span className="text-brand-primary">*</span>
+                    </label>
+                    <div className="relative">
+                      <Mail className="w-4 h-4 text-brand-textSecondary absolute left-3.5 top-1/2 -translate-y-1/2" />
+                      <input
+                        type="email"
+                        required
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        placeholder="you@domain.com"
+                        className="w-full bg-brand-bg/80 border border-brand-border focus:border-brand-primary focus:ring-1 focus:ring-brand-primary rounded-xl pl-10 pr-4 py-2 text-xs md:text-sm text-white placeholder:text-white/30 outline-none transition-colors"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Field 3: Phone Number with Country Code */}
+                  <div>
+                    <label className="block text-xs font-medium text-white/80 mb-1">
+                      3. Phone Number <span className="text-brand-primary">*</span>
+                    </label>
+                    <div className="flex gap-2">
+                      {/* Country Code Selector */}
+                      <div className="relative w-36 shrink-0">
+                        <select
+                          value={countryCode}
+                          onChange={(e) => setCountryCode(e.target.value)}
+                          className="w-full bg-brand-bg/80 border border-brand-border focus:border-brand-primary focus:ring-1 focus:ring-brand-primary rounded-xl px-2.5 py-2 text-xs md:text-sm text-white outline-none transition-colors appearance-none cursor-pointer"
+                        >
+                          {COUNTRY_CODES.map((item) => (
+                            <option key={item.code} value={item.code} className="bg-brand-surface text-white">
+                              {item.label}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+
+                      {/* Phone Input */}
+                      <div className="relative flex-1">
+                        <Phone className="w-4 h-4 text-brand-textSecondary absolute left-3.5 top-1/2 -translate-y-1/2" />
+                        <input
+                          type="tel"
+                          required
+                          value={phone}
+                          onChange={(e) => setPhone(e.target.value)}
+                          placeholder={countryCode === '+91' ? '7812804057' : 'Phone Number'}
+                          className="w-full bg-brand-bg/80 border border-brand-border focus:border-brand-primary focus:ring-1 focus:ring-brand-primary rounded-xl pl-10 pr-4 py-2 text-xs md:text-sm text-white placeholder:text-white/30 outline-none transition-colors"
+                        />
+                      </div>
+                    </div>
+                    <span className="text-[10px] text-brand-textSecondary mt-1 block">
+                      {countryCode === '+91' ? '10-digit mobile number for alerts.' : 'Standard international phone number.'}
+                    </span>
+                  </div>
+
+                  {/* Field 4: Password */}
+                  <div>
+                    <label className="block text-xs font-medium text-white/80 mb-1">
+                      4. Password <span className="text-brand-primary">*</span>
+                    </label>
+                    <div className="relative">
+                      <Lock className="w-4 h-4 text-brand-textSecondary absolute left-3.5 top-1/2 -translate-y-1/2" />
+                      <input
+                        type="password"
+                        required
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        placeholder="••••••••"
+                        className="w-full bg-brand-bg/80 border border-brand-border focus:border-brand-primary focus:ring-1 focus:ring-brand-primary rounded-xl pl-10 pr-4 py-2 text-xs md:text-sm text-white placeholder:text-white/30 outline-none transition-colors"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Field 5: Confirm Password */}
+                  <div>
+                    <label className="block text-xs font-medium text-white/80 mb-1">
+                      5. Confirm Password <span className="text-brand-primary">*</span>
+                    </label>
+                    <div className="relative">
+                      <Lock className="w-4 h-4 text-brand-textSecondary absolute left-3.5 top-1/2 -translate-y-1/2" />
+                      <input
+                        type="password"
+                        required
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        placeholder="••••••••"
+                        className="w-full bg-brand-bg/80 border border-brand-border focus:border-brand-primary focus:ring-1 focus:ring-brand-primary rounded-xl pl-10 pr-4 py-2 text-xs md:text-sm text-white placeholder:text-white/30 outline-none transition-colors"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Field 6: Submit Button */}
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="w-full mt-2 inline-flex items-center justify-center gap-2 bg-brand-primary hover:bg-brand-primaryDark text-[#0B0428] font-bold text-xs md:text-sm py-2.5 rounded-xl transition-all duration-200 shadow-md shadow-brand-primary/20 hover:scale-[1.01] disabled:opacity-50"
+                  >
+                    <span>{loading ? 'Registering...' : 'Create Account'}</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </button>
+                </form>
+
+                {/* Bottom Link: Already have an account? Login */}
+                <div className="mt-5 pt-4 border-t border-brand-border/60 text-center text-xs text-brand-textSecondary">
+                  Already have an account?{' '}
+                  <Link
+                    href="/login"
+                    className="text-brand-primary hover:underline font-semibold"
+                  >
+                    Login
+                  </Link>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
       </section>
+
+      {/* Signup Successful Popup Modal */}
+      {successData && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#0B0428]/80 backdrop-blur-md animate-fadeIn">
+          <div className="bg-brand-surface border border-brand-primary/50 rounded-3xl p-6 md:p-8 max-w-md w-full shadow-2xl relative text-center">
+            {/* Close Button */}
+            <button
+              onClick={() => setSuccessData(null)}
+              className="absolute top-4 right-4 p-2 rounded-full bg-brand-bg border border-brand-border hover:border-brand-primary text-white hover:text-brand-primary transition-colors"
+            >
+              <X className="w-4 h-4" />
+            </button>
+
+            {/* Success Icon */}
+            <div className="w-16 h-16 rounded-2xl bg-brand-primary/10 border border-brand-primary text-brand-primary flex items-center justify-center mx-auto mb-4 shadow-[0_0_25px_rgba(0,237,100,0.25)]">
+              <CheckCircle2 className="w-8 h-8" />
+            </div>
+
+            <span className="text-xs font-mono uppercase tracking-widest text-brand-primary font-bold block mb-1">
+              Registration Confirmed
+            </span>
+            <h3 className="text-xl md:text-2xl font-bold font-display text-white mb-2">
+              Signup Successful!
+            </h3>
+            <p className="text-xs md:text-sm text-brand-textSecondary leading-relaxed mb-5">
+              Welcome to TechNext Academy, <strong className="text-white">{successData.name}</strong>. Your account has been saved in our database.
+            </p>
+
+            {/* Registered Details Summary */}
+            <div className="bg-brand-bg/80 border border-brand-border rounded-2xl p-4 text-left text-xs space-y-2 mb-6">
+              <div className="flex justify-between items-center">
+                <span className="text-brand-textSecondary">Name:</span>
+                <span className="font-semibold text-white">{successData.name}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-brand-textSecondary">Email:</span>
+                <span className="font-semibold text-white">{successData.email}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-brand-textSecondary">Phone:</span>
+                <span className="font-semibold text-white">{successData.phone}</span>
+              </div>
+            </div>
+
+            {/* Modal Actions */}
+            <div className="flex flex-col sm:flex-row gap-3">
+              <Link
+                href="/login"
+                className="flex-1 inline-flex items-center justify-center gap-2 bg-brand-primary hover:bg-brand-primaryDark text-[#0B0428] font-bold text-xs py-2.5 rounded-xl transition-all shadow-md hover:scale-105"
+              >
+                <LogIn className="w-3.5 h-3.5" />
+                <span>Go to Login</span>
+              </Link>
+              <Link
+                href="/"
+                className="flex-1 inline-flex items-center justify-center gap-2 bg-brand-bg border border-brand-border hover:border-brand-primary text-white hover:text-brand-primary text-xs font-semibold py-2.5 rounded-xl transition-colors"
+              >
+                <Home className="w-3.5 h-3.5" />
+                <span>Home Page</span>
+              </Link>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Footer */}
       <Footer />

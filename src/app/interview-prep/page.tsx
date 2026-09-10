@@ -176,7 +176,7 @@ export default function InterviewPrepPage() {
             className="flex flex-wrap gap-4 items-center justify-center"
           >
             <Link
-              href="/signup?next=%2Finterview-test"
+              href="/interview-test"
               className="inline-flex items-center justify-center gap-2 bg-brand-primary hover:bg-brand-primaryDark text-[#0B0428] font-bold text-xs sm:text-sm px-6 py-3 rounded-full transition-all duration-200 shadow-lg shadow-brand-primary/20 hover:scale-[1.03]"
             >
               <span>Take Interview Readiness Test</span>
@@ -307,7 +307,7 @@ export default function InterviewPrepPage() {
 
             <div className="flex flex-wrap gap-4 items-center justify-center">
               <Link
-                href="/signup?next=%2Finterview-test"
+                href="/interview-test"
                 className="inline-flex items-center justify-center gap-2 bg-brand-primary hover:bg-brand-primaryDark text-[#0B0428] px-8 py-3 rounded-full font-bold text-xs sm:text-sm transition-all duration-200 shadow-lg shadow-brand-primary/20 hover:scale-105"
               >
                 <span>Start Assessment</span>
