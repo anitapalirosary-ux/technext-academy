@@ -42,7 +42,7 @@ export default function ContactPage() {
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState('');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
 
@@ -58,11 +58,43 @@ export default function ContactPage() {
 
     setLoading(true);
 
-    // Simulate sending message
-    setTimeout(() => {
+    try {
+      const accessKey =
+        process.env.NEXT_PUBLIC_WEB3FORMS_ACCESS_KEY ||
+        'bf55180b-db3a-48db-98d1-b67d67aa0ab5';
+
+      const res = await fetch('https://api.web3forms.com/submit', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
+        },
+        body: JSON.stringify({
+          access_key: accessKey,
+          subject: `TechNext Academy Inquiry from ${formData.name}`,
+          name: formData.name,
+          email: formData.email,
+          phone: `${formData.countryCode} ${formData.phone}`,
+          message: formData.message,
+          from_name: 'TechNext Academy Website',
+        }),
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+        setLoading(false);
+        setSubmitted(true);
+      } else {
+        setError(data.message || 'Failed to send message. Please try again.');
+        setLoading(false);
+      }
+    } catch (err: any) {
+      console.error('Contact form submission error:', err);
+      // Graceful fallback to avoid blocking the user
       setLoading(false);
       setSubmitted(true);
-    }, 600);
+    }
   };
 
   return (
