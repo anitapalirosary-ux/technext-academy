@@ -361,9 +361,9 @@ export default function InterviewTestPage() {
                   <button
                     type="button"
                     onClick={handleSubmit}
-                    className="inline-flex items-center gap-1 px-3 sm:px-4 py-1.5 rounded-xl bg-brand-primary hover:bg-brand-primaryDark text-[#0B0428] text-xs font-bold transition-all shadow-md shrink-0"
+                    className="inline-flex items-center gap-1 px-3 sm:px-3.5 py-1.5 rounded-xl bg-brand-primary hover:bg-brand-primaryDark text-[#0B0428] text-xs font-bold transition-all shadow-md shrink-0"
                   >
-                    <span>Finish &amp; View Report</span>
+                    <span>Finish</span>
                     <CheckCircle2 className="w-3.5 h-3.5" />
                   </button>
                 ) : (
