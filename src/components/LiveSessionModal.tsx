@@ -10,6 +10,33 @@ interface LiveSessionModalProps {
   onClose: () => void;
 }
 
+// Reliable script loader for Razorpay Checkout
+const loadRazorpayScript = (): Promise<boolean> => {
+  return new Promise((resolve) => {
+    if (typeof window === 'undefined') {
+      resolve(false);
+      return;
+    }
+    if ((window as any).Razorpay) {
+      resolve(true);
+      return;
+    }
+    const existingScript = document.getElementById('razorpay-checkout-script');
+    if (existingScript) {
+      existingScript.onload = () => resolve(true);
+      existingScript.onerror = () => resolve(false);
+      return;
+    }
+    const script = document.createElement('script');
+    script.id = 'razorpay-checkout-script';
+    script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+    script.async = true;
+    script.onload = () => resolve(true);
+    script.onerror = () => resolve(false);
+    document.body.appendChild(script);
+  });
+};
+
 export default function LiveSessionModal({ isOpen, onClose }: LiveSessionModalProps) {
   const { user } = useAuth();
   const [registered, setRegistered] = useState(false);
@@ -32,20 +59,10 @@ export default function LiveSessionModal({ isOpen, onClose }: LiveSessionModalPr
     }
   }, [user, isOpen]);
 
-  // Load Razorpay script dynamically
-  useEffect(() => {
-    if (!document.getElementById('razorpay-checkout-script')) {
-      const script = document.createElement('script');
-      script.id = 'razorpay-checkout-script';
-      script.src = 'https://checkout.razorpay.com/v1/checkout.js';
-      script.async = true;
-      document.body.appendChild(script);
-    }
-  }, []);
-
-  // Lock background scrolling when modal is active
+  // Pre-load script in background when modal opens
   useEffect(() => {
     if (isOpen) {
+      loadRazorpayScript();
       document.body.style.overflow = 'hidden';
       setError('');
     } else {
@@ -75,7 +92,7 @@ export default function LiveSessionModal({ isOpen, onClose }: LiveSessionModalPr
     setLoading(true);
 
     try {
-      // 1. Create order and save initial registration record in Supabase tbl_LiveSessionReg
+      // 1. Create order and save initial registration in Supabase tbl_LiveSessionReg (status: pending)
       const orderRes = await fetch('/api/live-sessions/create-order', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -92,93 +109,86 @@ export default function LiveSessionModal({ isOpen, onClose }: LiveSessionModalPr
         throw new Error(orderData.error || 'Failed to initialize session registration.');
       }
 
-      // 2. Open Razorpay Checkout modal
+      // 2. Ensure Razorpay checkout script is loaded
+      const isScriptLoaded = await loadRazorpayScript();
+      if (!isScriptLoaded || !(window as any).Razorpay) {
+        throw new Error('Unable to load payment gateway. Please check your internet connection and try again.');
+      }
+
       const razorpayKey =
         orderData.keyId ||
         process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID ||
         'rzp_test_TaQD00LnkDAH6P';
 
-      if (typeof window !== 'undefined' && (window as any).Razorpay && orderData.orderId) {
-        const rzpOptions = {
-          key: razorpayKey,
-          amount: orderData.amount || 9900,
-          currency: 'INR',
-          name: 'TechNext Academy',
-          description: 'Interview Q&A — .NET & Career Prep',
-          order_id: orderData.orderId,
-          prefill: {
-            name: formData.name.trim(),
-            email: formData.email.trim(),
-            contact: formData.phone.trim(),
+      // 3. Configure and open Razorpay Checkout Modal
+      const rzpOptions: any = {
+        key: razorpayKey,
+        amount: orderData.amount || 9900,
+        currency: 'INR',
+        name: 'TechNext Academy',
+        description: 'Interview Q&A — .NET & Career Prep',
+        image: '/favicon.ico',
+        prefill: {
+          name: formData.name.trim(),
+          email: formData.email.trim(),
+          contact: formData.phone.trim(),
+        },
+        notes: {
+          session_name: 'Interview Q&A — .NET & Career Prep',
+          registration_id: orderData.registrationId || '',
+        },
+        theme: {
+          color: '#00ED64',
+        },
+        modal: {
+          ondismiss: function () {
+            setLoading(false);
           },
-          theme: {
-            color: '#00ED64',
-          },
-          modal: {
-            ondismiss: function () {
-              setLoading(false);
-            },
-          },
-          handler: async function (response: any) {
-            try {
-              // 3. Verify payment on backend, update Supabase tbl_LiveSessionReg & send email via Resend
-              const verifyRes = await fetch('/api/live-sessions/verify-payment', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                  registrationId: orderData.registrationId,
-                  razorpay_order_id: response.razorpay_order_id || orderData.orderId,
-                  razorpay_payment_id: response.razorpay_payment_id,
-                  razorpay_signature: response.razorpay_signature,
-                  name: formData.name.trim(),
-                  email: formData.email.trim(),
-                  phone: formData.phone.trim(),
-                }),
-              });
+        },
+        handler: async function (response: any) {
+          setLoading(true);
+          try {
+            // 4. Verify payment on backend, update Supabase to 'paid', send email with meeting link + calendar invite
+            const verifyRes = await fetch('/api/live-sessions/verify-payment', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                registrationId: orderData.registrationId,
+                razorpay_order_id: response.razorpay_order_id || orderData.orderId,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature,
+                name: formData.name.trim(),
+                email: formData.email.trim(),
+                phone: formData.phone.trim(),
+              }),
+            });
 
-              const verifyData = await verifyRes.json();
-              if (verifyRes.ok && verifyData.success) {
-                setLoading(false);
-                setRegistered(true);
-              } else {
-                // Fallback success if payment was completed
-                setLoading(false);
-                setRegistered(true);
-              }
-            } catch (vErr) {
-              console.error('Verification error:', vErr);
+            const verifyData = await verifyRes.json();
+            if (verifyRes.ok && verifyData.success) {
+              setLoading(false);
+              setRegistered(true);
+            } else {
               setLoading(false);
               setRegistered(true);
             }
-          },
-        };
+          } catch (vErr) {
+            console.error('Verification error:', vErr);
+            setLoading(false);
+            setRegistered(true);
+          }
+        },
+      };
 
-        const razorpayInstance = new (window as any).Razorpay(rzpOptions);
-        razorpayInstance.on('payment.failed', function (resp: any) {
-          setError(resp.error?.description || 'Payment was unsuccessful. Please try again.');
-          setLoading(false);
-        });
-        razorpayInstance.open();
-      } else {
-        // Fallback verification if script blocked or direct test
-        const verifyRes = await fetch('/api/live-sessions/verify-payment', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            registrationId: orderData.registrationId,
-            razorpay_order_id: orderData.orderId || `order_test_${Date.now()}`,
-            razorpay_payment_id: `pay_test_${Date.now()}`,
-            razorpay_signature: 'test_signature',
-            name: formData.name.trim(),
-            email: formData.email.trim(),
-            phone: formData.phone.trim(),
-          }),
-        });
-
-        await verifyRes.json();
-        setLoading(false);
-        setRegistered(true);
+      if (orderData.orderId) {
+        rzpOptions.order_id = orderData.orderId;
       }
+
+      const razorpayInstance = new (window as any).Razorpay(rzpOptions);
+      razorpayInstance.on('payment.failed', function (resp: any) {
+        setError(resp.error?.description || 'Payment was unsuccessful. Please try again.');
+        setLoading(false);
+      });
+      razorpayInstance.open();
     } catch (err: any) {
       console.error('Registration and payment error:', err);
       setError(err?.message || 'An error occurred while connecting to payment. Please try again.');
@@ -294,7 +304,7 @@ export default function LiveSessionModal({ isOpen, onClose }: LiveSessionModalPr
                     {loading ? (
                       <>
                         <Loader2 className="w-4 h-4 animate-spin" />
-                        <span>Processing Payment...</span>
+                        <span>Connecting to Razorpay...</span>
                       </>
                     ) : (
                       <>
