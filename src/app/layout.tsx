@@ -14,6 +14,7 @@ const spaceGrotesk = Space_Grotesk({
   display: 'swap',
 });
 
+import Script from 'next/script';
 import { AuthProvider } from '@/context/AuthContext';
 import UserProfileModal from '@/components/UserProfileModal';
 
@@ -21,6 +22,8 @@ export const metadata: Metadata = {
   title: 'TechNext Academy | Career Readiness & Industry Mentorship',
   description: 'Bridge the gap between coding and a real tech career with structured cohort programs led by industry practitioners.',
 };
+
+const gaMeasurementId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID || 'G-7K7DHHTGSQ';
 
 export default function RootLayout({
   children,
@@ -30,6 +33,24 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${inter.variable} ${spaceGrotesk.variable}`}>
       <body className="bg-brand-bg text-brand-textPrimary antialiased selection:bg-brand-primary/30 selection:text-brand-primary">
+        {gaMeasurementId && (
+          <>
+            <Script
+              src={`https://www.googletagmanager.com/gtag/js?id=${gaMeasurementId}`}
+              strategy="afterInteractive"
+            />
+            <Script id="google-analytics" strategy="afterInteractive">
+              {`
+                window.dataLayer = window.dataLayer || [];
+                function gtag(){dataLayer.push(arguments);}
+                gtag('js', new Date());
+                gtag('config', '${gaMeasurementId}', {
+                  page_path: window.location.pathname,
+                });
+              `}
+            </Script>
+          </>
+        )}
         <AuthProvider>
           {children}
           <UserProfileModal />
