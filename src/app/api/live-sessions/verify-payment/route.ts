@@ -166,12 +166,14 @@ export async function POST(req: Request) {
       </div>
     `;
 
-    // 4. Send Confirmation Email via Resend
+    // 4. Send Confirmation Email via Resend & Web3Forms
     let emailSent = false;
+    let emailError = null;
+
     if (resendApiKey) {
-      // 4a. Always send to supportEmail (anita.palirosary@gmail.com) so delivery is 100% guaranteed in Resend testing sandbox
+      // 4a. Send to supportEmail (anita.palirosary@gmail.com)
       try {
-        await fetch('https://api.resend.com/emails', {
+        const resendRes = await fetch('https://api.resend.com/emails', {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${resendApiKey}`,
@@ -190,12 +192,38 @@ export async function POST(req: Request) {
             ],
           }),
         });
-        emailSent = true;
-      } catch (err) {
+
+        const resData = await resendRes.json();
+        if (resendRes.ok) {
+          emailSent = true;
+        } else {
+          console.error('Resend primary email error:', resData);
+          emailError = resData;
+
+          // Retry without attachment if attachment caused rejection
+          const retryRes = await fetch('https://api.resend.com/emails', {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${resendApiKey}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              from: 'TechNext Academy <onboarding@resend.dev>',
+              to: [supportEmail],
+              subject: `Seat Reserved: ${sessionTitle} (${name}) - TechNext Academy`,
+              html: emailHtml,
+            }),
+          });
+          if (retryRes.ok) {
+            emailSent = true;
+          }
+        }
+      } catch (err: any) {
         console.error('Failed to send Resend email to supportEmail:', err);
+        emailError = err?.message;
       }
 
-      // 4b. If candidate email is different from supportEmail, try sending to candidate email as well
+      // 4b. If candidate email is different from supportEmail, attempt delivery to candidate
       if (email && email.trim().toLowerCase() !== supportEmail.toLowerCase()) {
         try {
           await fetch('https://api.resend.com/emails', {
@@ -209,18 +237,40 @@ export async function POST(req: Request) {
               to: [email.trim()],
               subject: `Seat Reserved: ${sessionTitle} - TechNext Academy`,
               html: emailHtml,
-              attachments: [
-                {
-                  filename: 'technext-live-session.ics',
-                  content: icsBase64,
-                },
-              ],
             }),
           });
         } catch (candErr) {
-          console.warn('Resend candidate email attempt notice (requires verified custom domain if testing):', candErr);
+          console.warn('Resend candidate email attempt notice:', candErr);
         }
       }
+    }
+
+    // 5. Dual-Delivery via Web3Forms (Guarantees inbox delivery to anita.palirosary@gmail.com)
+    try {
+      const web3FormsKey =
+        process.env.WEB3FORMS_ACCESS_KEY ||
+        process.env.NEXT_PUBLIC_WEB3FORMS_ACCESS_KEY ||
+        'bf55180b-db3a-48db-98d1-b67d67aa0ab5';
+
+      await fetch('https://api.web3forms.com/submit', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
+        },
+        body: JSON.stringify({
+          access_key: web3FormsKey,
+          subject: `🎉 Seat Reserved: ${sessionTitle} - ${name} (Paid ₹99)`,
+          from_name: 'TechNext Academy Live Sessions',
+          name: name,
+          email: email,
+          phone: phone,
+          message: `LIVE SESSION REGISTRATION CONFIRMED\n\nSession: ${sessionTitle}\nCandidate Name: ${name}\nCandidate Email: ${email}\nPhone: ${phone || 'Not provided'}\nPayment ID: ${razorpay_payment_id || 'CONFIRMED'}\nDate: ${sessionDateFormatted}\nTime: ${sessionTimeFormatted}\n\nGoogle Meet Link: ${meetingLink}\n\nCalendar Invite Link: ${gCalUrl}`,
+        }),
+      });
+      emailSent = true;
+    } catch (wErr) {
+      console.error('Web3Forms backup notification error:', wErr);
     }
 
     return NextResponse.json({
