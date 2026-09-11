@@ -204,6 +204,16 @@ export default function InterviewTestPage() {
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
+  // 3-question sliding window pagination
+  const getVisibleQuestionIndices = () => {
+    const windowSize = 3;
+    let start = currentIdx;
+    if (start + windowSize > totalQuestions) {
+      start = Math.max(0, totalQuestions - windowSize);
+    }
+    return Array.from({ length: Math.min(windowSize, totalQuestions) }, (_, i) => start + i);
+  };
+
   const currentQ = ASSESSMENT_QUESTIONS[currentIdx];
   const Icon = currentQ.icon;
 
@@ -316,27 +326,30 @@ export default function InterviewTestPage() {
               </div>
 
               {/* Navigation Controls */}
-              <div className="flex items-center justify-between pt-4 border-t border-brand-border/60">
+              <div className="flex items-center justify-between gap-1.5 sm:gap-3 pt-4 border-t border-brand-border/60">
                 <button
+                  type="button"
                   onClick={handlePrev}
                   disabled={currentIdx === 0}
-                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl border border-white/20 hover:border-brand-primary text-white hover:text-brand-primary text-xs font-semibold disabled:opacity-30 disabled:pointer-events-none transition-colors"
+                  className="inline-flex items-center gap-1 px-2.5 sm:px-3 py-1.5 rounded-xl border border-white/20 hover:border-brand-primary text-white hover:text-brand-primary text-xs font-semibold disabled:opacity-30 disabled:pointer-events-none transition-colors shrink-0"
                 >
                   <ArrowLeft className="w-3.5 h-3.5" />
                   <span>Previous</span>
                 </button>
 
-                <div className="flex gap-1.5">
-                  {ASSESSMENT_QUESTIONS.map((_, dotIdx) => (
+                {/* Sliding 3-Number Window */}
+                <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
+                  {getVisibleQuestionIndices().map((dotIdx) => (
                     <button
                       key={dotIdx}
+                      type="button"
                       onClick={() => setCurrentIdx(dotIdx)}
-                      className={`w-7 h-7 rounded-lg text-xs font-mono transition-all ${
+                      className={`w-7 h-7 sm:w-8 sm:h-8 rounded-lg text-xs font-mono transition-all ${
                         currentIdx === dotIdx
-                          ? 'bg-brand-primary text-[#0B0428] font-bold'
+                          ? 'bg-brand-primary text-[#0B0428] font-bold shadow-[0_0_10px_rgba(0,237,100,0.3)]'
                           : selectedAnswers[dotIdx] !== undefined
                           ? 'bg-brand-surface border border-brand-primary/40 text-brand-primary'
-                          : 'bg-brand-bg text-white/40 hover:text-white'
+                          : 'bg-brand-bg text-white/50 hover:text-white border border-brand-border/60'
                       }`}
                     >
                       {dotIdx + 1}
@@ -346,16 +359,18 @@ export default function InterviewTestPage() {
 
                 {currentIdx === totalQuestions - 1 ? (
                   <button
+                    type="button"
                     onClick={handleSubmit}
-                    className="inline-flex items-center gap-1.5 px-5 py-2 rounded-xl bg-brand-primary hover:bg-brand-primaryDark text-[#0B0428] text-xs font-bold transition-all shadow-md hover:scale-105"
+                    className="inline-flex items-center gap-1 px-3 sm:px-4 py-1.5 rounded-xl bg-brand-primary hover:bg-brand-primaryDark text-[#0B0428] text-xs font-bold transition-all shadow-md shrink-0"
                   >
                     <span>Finish &amp; View Report</span>
                     <CheckCircle2 className="w-3.5 h-3.5" />
                   </button>
                 ) : (
                   <button
+                    type="button"
                     onClick={handleNext}
-                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-brand-primary hover:bg-brand-primaryDark text-[#0B0428] text-xs font-bold transition-all shadow-md hover:scale-105"
+                    className="inline-flex items-center gap-1 px-3 sm:px-3.5 py-1.5 rounded-xl bg-brand-primary hover:bg-brand-primaryDark text-[#0B0428] text-xs font-bold transition-all shadow-md shrink-0"
                   >
                     <span>Next</span>
                     <ArrowRight className="w-3.5 h-3.5" />
