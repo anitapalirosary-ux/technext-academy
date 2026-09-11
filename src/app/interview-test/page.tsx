@@ -140,7 +140,6 @@ import { useAuth } from '@/context/AuthContext';
 
 export default function InterviewTestPage() {
   const { user } = useAuth();
-  const userName = user?.name || 'Candidate';
   const [currentIdx, setCurrentIdx] = useState(0);
   const [selectedAnswers, setSelectedAnswers] = useState<{ [key: number]: number }>({});
   const [isSubmitted, setIsSubmitted] = useState(false);
@@ -235,9 +234,11 @@ export default function InterviewTestPage() {
                 <span className="text-xs font-semibold text-brand-primary uppercase tracking-widest">
                   Assessment Simulator
                 </span>
-                <span className="text-[10px] text-brand-textSecondary bg-brand-surface border border-brand-border px-2 py-0.5 rounded-full">
-                  Candidate: <strong className="text-white">{userName}</strong>
-                </span>
+                {user?.name && (
+                  <span className="text-[10px] text-brand-textSecondary bg-brand-surface border border-brand-border px-2 py-0.5 rounded-full">
+                    Candidate: <strong className="text-white">{user.name}</strong>
+                  </span>
+                )}
               </div>
               <h1 className="text-xl md:text-2xl font-bold font-display text-white mt-1">
                 Technical Interview Readiness Assessment
@@ -396,7 +397,7 @@ export default function InterviewTestPage() {
                       Official Candidate Assessment Report
                     </span>
                     <h2 className="text-2xl font-bold font-display text-white">
-                      {userName}&apos;s Interview Readiness Score
+                      {user?.name ? `${user.name}'s Interview Readiness Score` : 'Technical Interview Readiness Score'}
                     </h2>
                     <p className="text-xs text-brand-textSecondary mt-1">
                       Completed on {new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
